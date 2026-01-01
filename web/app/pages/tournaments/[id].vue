@@ -251,9 +251,7 @@
     standingsPending.value = true
     try {
       standings.value = await $api(`/tournaments/${tournamentId}/standings`)
-      console.log('standings.value: ', standings.value)
     } catch (e) {
-      console.log('e: ', e)
       standings.value = []
       standingsError.value = e?.data?.message || ""
     } finally {

@@ -82,7 +82,6 @@
   
       router.push(`/tournaments/${created.id}`)
     } catch (e) {
-        console.log(e)
       error.value = e?.data?.message || "Erreur lors de la création."
     } finally {
       loading.value = false

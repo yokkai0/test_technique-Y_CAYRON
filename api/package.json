@@ -6,7 +6,8 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "prisma:migrate-reset": "prisma migrate reset --force",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "test": "vitest run"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +23,8 @@
   "devDependencies": {
     "@types/node": "^25.0.3",
     "nodemon": "^3.1.11",
-    "prisma": "^6.19.1"
+    "prisma": "^6.19.1",
+    "supertest": "^7.1.4",
+    "vitest": "^4.0.16"
   }
 }
