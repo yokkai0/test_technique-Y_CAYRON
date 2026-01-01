@@ -1,0 +1,12 @@
+{
+  "name": "babyfoot-tournaments",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm --prefix api run dev\" \"npm --prefix web run dev\"",
+    "install:all": "npm --prefix api i && npm --prefix web i",
+    "db:reset": "npm --prefix api run prisma:migrate-reset"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}
