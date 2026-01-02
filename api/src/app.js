@@ -3,14 +3,20 @@ const cors = require("cors");
 const helmet = require("helmet");
 const { PrismaClient } = require("@prisma/client");
 const { z } = require("zod");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 
 const prisma = new PrismaClient();
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: ["http://localhost:3000"] }));
 app.use(express.json());
-
+app.use(cookieParser());
+app.use(cors({
+    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+    credentials: true,
+}));
+  
 // Health
 app.get("/api/health", (_, res) => res.json({ ok: true }));
 
@@ -30,8 +36,78 @@ const scoreSchema = z.object({
   awayScore: z.number().int().min(0),
 });
 
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "admin";
+
+function signToken() {
+  return jwt.sign({ role: "admin" }, process.env.JWT_SECRET, { expiresIn: "7d" });
+}
+
+function requireAdmin(req, res, next) {
+  try {
+    const header = req.headers.authorization;
+    const tokenFromHeader = header?.startsWith("Bearer ") ? header.slice(7) : null;
+    const token = tokenFromHeader || req.cookies?.token;
+
+    if (!token) return res.status(401).json({ message: "Unauthorized" });
+
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    if (payload?.role !== "admin") return res.status(403).json({ message: "Forbidden" });
+
+    req.user = payload;
+    next();
+  } catch {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+}
+
+// Login
+app.post("/api/auth/login", (req, res) => {
+  const { username, password } = req.body || {};
+  if (username !== ADMIN_USER || password !== ADMIN_PASS) {
+    return res.status(401).json({ message: "Invalid credentials" });
+  }
+
+  const token = signToken();
+
+  res.cookie("token", token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: false,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+
+  res.json({ ok: true });
+});
+
+app.get("/api/auth/me", (req, res) => {
+  try {
+    const token = req.cookies?.token;
+    if (!token) return res.json({ authenticated: false });
+
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    res.json({ authenticated: payload?.role === "admin" });
+  } catch {
+    res.json({ authenticated: false });
+  }
+});
+
+// Logout
+app.post("/api/auth/logout", (req, res) => {
+    res.clearCookie("token", {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false,
+      path: "/",
+    });
+  
+    res.clearCookie("token");
+    res.json({ ok: true });
+  });
+  
+
 // creation tournoi
-app.post("/api/tournaments", async (req, res, next) => {
+app.post("/api/tournaments", requireAdmin, async (req, res, next) => {
     try {
       const body = tournamentSchema.parse(req.body);
       const created = await prisma.tournament.create({
@@ -80,7 +156,7 @@ app.get("/api/tournaments/:id", async (req, res, next) => {
 });
 
 // Ajouter team dans tournoi
-app.post("/api/tournaments/:id/teams", async (req, res, next) => {
+app.post("/api/tournaments/:id/teams", requireAdmin, async (req, res, next) => {
     try {
       const { name } = teamSchema.parse(req.body);
       const tournamentId = req.params.id;
@@ -109,7 +185,7 @@ app.post("/api/tournaments/:id/teams", async (req, res, next) => {
 
 // Créatin de matchs
 // Generate matches round-robin (each pair once)
-app.post("/api/tournaments/:id/matches/generate", async (req, res, next) => {
+app.post("/api/tournaments/:id/matches/generate", requireAdmin, async (req, res, next) => {
     try {
       const tournamentId = req.params.id;
   
@@ -151,7 +227,7 @@ app.post("/api/tournaments/:id/matches/generate", async (req, res, next) => {
 });
 
 // Update score d'un match
-app.patch("/api/matches/:matchId/score", async (req, res, next) => {
+app.patch("/api/matches/:matchId/score", requireAdmin, async (req, res, next) => {
     try {
       const body = scoreSchema.parse(req.body);
   

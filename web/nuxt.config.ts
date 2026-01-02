@@ -1,5 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  css: ['~/assets/css/main.css'],
+
   modules: [
     '@nuxt/eslint',
     '@nuxt/ui',
@@ -14,8 +16,6 @@ export default defineNuxtConfig({
   devtools: {
     enabled: true
   },
-
-  css: ['~/assets/css/main.css'],
 
   compatibilityDate: '2025-01-15',
 

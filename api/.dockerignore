@@ -1,0 +1,6 @@
+node_modules
+dev.db
+test.db
+prisma/migrations
+npm-debug.log
+.DS_Store

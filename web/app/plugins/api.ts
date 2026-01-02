@@ -5,6 +5,7 @@ export default defineNuxtPlugin(() => {
 
   const api = $fetch.create({
     baseURL: config.public.apiBase,
+    credentials: "include"
   })
 
   return { provide: { api } }

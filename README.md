@@ -30,7 +30,7 @@ Front: http://localhost:3000
 API: http://localhost:3001/api/health
 
 Base de données (SQLite)
-    La base est un fichier local api/dev.db.
+    La base est un fichier local ./api/dev.db.
 
 Reset DB (dev) :
     npm --prefix api run prisma:migrate-reset
@@ -52,12 +52,12 @@ Outils utilisés
 
 Base de données SQLite dédiée aux tests
     Base de test
-        Fichier : api/test.db
+        Fichier : ./api/test.db
 
 La base est automatiquement réinitialisée avant les tests.
 
 Lancer les tests API
-    Depuis le dossier api/ :
+    Depuis le dossier ./api/ :
         npm test
 
 Tests couverts
