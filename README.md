@@ -1,4 +1,4 @@
-# Baby-Foot Tournament Manager (Nuxt + Node (avec Prisma))
+# Baby-Tournaments (Nuxt + Node (avec Prisma))
 
 Application web pour créer et gérer des tournois de baby-foot :
     - création de tournois
