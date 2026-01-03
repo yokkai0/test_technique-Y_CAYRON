@@ -1,4 +1,3 @@
-<!-- pages/tournaments/[id].vue (ou wherever) -->
 <template>
   <div v-if="tournament" class="tournamentPage">
     <!-- Header -->
@@ -188,134 +187,134 @@
 </template>
 
 <script setup>
-import "~/assets/css/tournament.css"
+  import "~/assets/css/tournament.css"
 
-definePageMeta({
-  layout: "admin",
-})
+  definePageMeta({
+    layout: "admin",
+  })
 
-const { $api } = useNuxtApp()
-const route = useRoute()
-const tournamentId = route.params.id
+  const { $api } = useNuxtApp()
+  const route = useRoute()
+  const tournamentId = route.params.id
 
-// tournoi
-const { data: tournament, refresh } = await useAsyncData(`tournament-${tournamentId}`, () =>
-  $api(`/tournaments/${tournamentId}`)
-)
+  // tournoi
+  const { data: tournament, refresh } = await useAsyncData(`tournament-${tournamentId}`, () =>
+    $api(`/tournaments/${tournamentId}`)
+  )
 
-// Teams
-const teamName = ref("")
-const loadingTeam = ref(false)
-const teamError = ref("")
+  // Teams
+  const teamName = ref("")
+  const loadingTeam = ref(false)
+  const teamError = ref("")
 
-async function addTeam() {
-  teamError.value = ""
-  const name = teamName.value.trim()
-  if (!name) return
+  async function addTeam() {
+    teamError.value = ""
+    const name = teamName.value.trim()
+    if (!name) return
 
-  loadingTeam.value = true
-  try {
-    await $api(`/tournaments/${tournamentId}/teams`, {
-      method: "POST",
-      body: { name },
-    })
-    teamName.value = ""
-    await refresh()
-  } catch (e) {
-    teamError.value = e?.data?.message || "Erreur lors de l'ajout."
-  } finally {
-    loadingTeam.value = false
-  }
-}
-
-// Matchs
-const loadingGen = ref(false)
-const matchError = ref("")
-
-// Scores + standings
-const scores = reactive({})
-const saving = reactive({})
-const standings = ref([])
-const standingsPending = ref(false)
-const standingsError = ref("")
-
-watch(
-  () => tournament.value,
-  (t) => {
-    if (!t) return
-    for (const m of t.matches || []) {
-      if (!scores[m.id]) {
-        scores[m.id] = { home: m.homeScore ?? 0, away: m.awayScore ?? 0 }
-      } else {
-        // garde ce que l’utilisateur a tapé si déjà présent
-        scores[m.id].home = scores[m.id].home ?? (m.homeScore ?? 0)
-        scores[m.id].away = scores[m.id].away ?? (m.awayScore ?? 0)
-      }
-      saving[m.id] = false
+    loadingTeam.value = true
+    try {
+      await $api(`/tournaments/${tournamentId}/teams`, {
+        method: "POST",
+        body: { name },
+      })
+      teamName.value = ""
+      await refresh()
+    } catch (e) {
+      teamError.value = e?.data?.message || "Erreur lors de l'ajout."
+    } finally {
+      loadingTeam.value = false
     }
-    refreshStandings()
-  },
-  { immediate: true }
-)
-
-function formatDate(dateLike) {
-  try {
-    return new Date(dateLike).toLocaleString()
-  } catch {
-    return ""
   }
-}
 
-function hasRealStandings() {
-  if (!Array.isArray(standings.value) || standings.value.length === 0) return false
-  // même logique que précédemment : on considère "présent" si au moins un match joué
-  return standings.value.some((r) => (r?.played ?? 0) > 0)
-}
+  // Matchs
+  const loadingGen = ref(false)
+  const matchError = ref("")
 
-async function saveScore(matchId) {
-  matchError.value = ""
-  saving[matchId] = true
-  try {
-    await $api(`/matches/${matchId}/score`, {
-      method: "PATCH",
-      body: {
-        homeScore: scores[matchId].home,
-        awayScore: scores[matchId].away,
-      },
-    })
-    await refresh()
-    await refreshStandings()
-  } catch (e) {
-    matchError.value = e?.data?.message || "Erreur lors de l'enregistrement."
-  } finally {
-    saving[matchId] = false
+  // Scores + standings
+  const scores = reactive({})
+  const saving = reactive({})
+  const standings = ref([])
+  const standingsPending = ref(false)
+  const standingsError = ref("")
+
+  watch(
+    () => tournament.value,
+    (t) => {
+      if (!t) return
+      for (const m of t.matches || []) {
+        if (!scores[m.id]) {
+          scores[m.id] = { home: m.homeScore ?? 0, away: m.awayScore ?? 0 }
+        } else {
+          // garde ce que l’utilisateur a tapé si déjà présent
+          scores[m.id].home = scores[m.id].home ?? (m.homeScore ?? 0)
+          scores[m.id].away = scores[m.id].away ?? (m.awayScore ?? 0)
+        }
+        saving[m.id] = false
+      }
+      refreshStandings()
+    },
+    { immediate: true }
+  )
+
+  function formatDate(dateLike) {
+    try {
+      return new Date(dateLike).toLocaleString()
+    } catch {
+      return ""
+    }
   }
-}
 
-async function refreshStandings() {
-  standingsError.value = ""
-  standingsPending.value = true
-  try {
-    standings.value = await $api(`/tournaments/${tournamentId}/standings`)
-  } catch (e) {
-    standings.value = []
-    standingsError.value = e?.data?.message || ""
-  } finally {
-    standingsPending.value = false
+  function hasRealStandings() {
+    if (!Array.isArray(standings.value) || standings.value.length === 0) return false
+    // même logique que précédemment : on considère "présent" si au moins un match joué
+    return standings.value.some((r) => (r?.played ?? 0) > 0)
   }
-}
 
-async function generateMatches() {
-  matchError.value = ""
-  loadingGen.value = true
-  try {
-    await $api(`/tournaments/${tournamentId}/matches/generate`, { method: "POST" })
-    await refresh()
-    await refreshStandings()
-  } catch (e) {
-    matchError.value = e?.data?.message || "Erreur lors de la génération."
-  } finally {
-    loadingGen.value = false
+  async function saveScore(matchId) {
+    matchError.value = ""
+    saving[matchId] = true
+    try {
+      await $api(`/matches/${matchId}/score`, {
+        method: "PATCH",
+        body: {
+          homeScore: scores[matchId].home,
+          awayScore: scores[matchId].away,
+        },
+      })
+      await refresh()
+      await refreshStandings()
+    } catch (e) {
+      matchError.value = e?.data?.message || "Erreur lors de l'enregistrement."
+    } finally {
+      saving[matchId] = false
+    }
   }
-}
+
+  async function refreshStandings() {
+    standingsError.value = ""
+    standingsPending.value = true
+    try {
+      standings.value = await $api(`/tournaments/${tournamentId}/standings`)
+    } catch (e) {
+      standings.value = []
+      standingsError.value = e?.data?.message || ""
+    } finally {
+      standingsPending.value = false
+    }
+  }
+
+  async function generateMatches() {
+    matchError.value = ""
+    loadingGen.value = true
+    try {
+      await $api(`/tournaments/${tournamentId}/matches/generate`, { method: "POST" })
+      await refresh()
+      await refreshStandings()
+    } catch (e) {
+      matchError.value = e?.data?.message || "Erreur lors de la génération."
+    } finally {
+      loadingGen.value = false
+    }
+  }
 </script>

@@ -1,48 +1,48 @@
 <template>
-    <div class="login">
-      <div class="login__card">
-        <!-- Header -->
-        <div class="login__header">
-          <h1 class="login__title">Connexion administrateur</h1>
-          <p class="login__subtitle">
-            <span class="login__hint">Identifiants pour le test : admin / admin</span>
-          </p>
-        </div>
-  
-        <!-- Form -->
-        <form class="login__form" @submit.prevent="login">
-          <div class="field">
-            <label class="field__label">Nom d’utilisateur</label>
-            <input
-              v-model="username"
-              class="field__input"
-              autocomplete="username"
-            />
-          </div>
-  
-          <div class="field">
-            <label class="field__label">Mot de passe</label>
-            <input
-              type="password"
-              v-model="password"
-              class="field__input"
-              autocomplete="current-password"
-            />
-          </div>
-  
-          <button class="login__button" :disabled="loading">
-            {{ loading ? "Connexion en cours..." : "Se connecter" }}
-          </button>
-  
-          <p v-if="error" class="login__error">
-            {{ error }}
-          </p>
-        </form>
+  <div class="login">
+    <div class="login__card">
+      <!-- Header -->
+      <div class="login__header">
+        <h1 class="login__title">Connexion administrateur</h1>
+        <p class="login__subtitle">
+          <span class="login__hint">Identifiants pour le test : admin / admin</span>
+        </p>
       </div>
+
+      <!-- Form -->
+      <form class="login__form" @submit.prevent="login">
+        <div class="field">
+          <label class="field__label">Nom d’utilisateur</label>
+          <input
+            v-model="username"
+            class="field__input"
+            autocomplete="username"
+          />
+        </div>
+
+        <div class="field">
+          <label class="field__label">Mot de passe</label>
+          <input
+            type="password"
+            v-model="password"
+            class="field__input"
+            autocomplete="current-password"
+          />
+        </div>
+
+        <button class="login__button" :disabled="loading">
+          {{ loading ? "Connexion en cours..." : "Se connecter" }}
+        </button>
+
+        <p v-if="error" class="login__error">
+          {{ error }}
+        </p>
+      </form>
     </div>
-  </template>
+  </div>
+</template>
   
-  <script setup>
+<script setup>
   const { $api } = useNuxtApp()
   const router = useRouter()
   
@@ -52,26 +52,26 @@
   const error = ref("")
   
   
-async function login() {
-  error.value = ""
-  loading.value = true
+  async function login() {
+    error.value = ""
+    loading.value = true
 
-  try {
-      await $api("/auth/login", {
-        method: "POST",
-        body: { username: username.value, password: password.value },
-      })
+    try {
+        await $api("/auth/login", {
+          method: "POST",
+          body: { username: username.value, password: password.value },
+        })
 
-      await router.push("/admin")
-    } catch (e) {
-      error.value = e?.data?.message || "Identifiants incorrects"
-    } finally {
-      loading.value = false
-    }
+        await router.push("/admin")
+      } catch (e) {
+        error.value = e?.data?.message || "Identifiants incorrects"
+      } finally {
+        loading.value = false
+      }
   }
 </script>
   
-  <style scoped>
+<style scoped>
   /* Layout */
   .login {
     min-height: 50vh;
@@ -188,5 +188,5 @@ async function login() {
     font-size: 13px;
     color: #f87171;
   }
-  </style>
+</style>
   

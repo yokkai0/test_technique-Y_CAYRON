@@ -1,4 +1,3 @@
-<!-- pages/tournaments/index.vue -->
 <template>
   <div class="tournamentsPage">
     <!-- Header -->
@@ -79,7 +78,7 @@
               </div>
             </div>
 
-            <!-- 2) Tournoi commencé => on tente d’afficher le classement -->
+            <!-- 2) Tournoi commencé => on affiche le classement -->
             <template v-else>
               <div v-if="standingsLoading[t.id]" class="miniLoading">
                 <span class="miniDot" />
